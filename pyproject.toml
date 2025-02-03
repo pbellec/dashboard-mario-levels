@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dashboard-mario-scene"
+version = "0.1"
+dependencies = [
+    "dash",
+    "flask",
+    "pandas",
+    "numpy",
+    "plotly"
+]
+description = "A Dash-based dashboard for UMAP scene visualization"
+authors = [{name = "Your Name"}]
+license = {text = "MIT"}
+
+[tool.setuptools]
+packages = ["src"]  # Include only the "code" package

@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+dashboard_mario_scene.egg-info/PKG-INFO
+dashboard_mario_scene.egg-info/SOURCES.txt
+dashboard_mario_scene.egg-info/dependency_links.txt
+dashboard_mario_scene.egg-info/requires.txt
+dashboard_mario_scene.egg-info/top_level.txt
+src/__init__.py
+src/load_data.py

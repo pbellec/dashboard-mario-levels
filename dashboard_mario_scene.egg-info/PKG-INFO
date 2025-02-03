@@ -1,0 +1,12 @@
+Metadata-Version: 2.2
+Name: dashboard-mario-scene
+Version: 0.1
+Summary: A Dash-based dashboard for UMAP scene visualization
+Author: Your Name
+License: MIT
+License-File: LICENSE
+Requires-Dist: dash
+Requires-Dist: flask
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: plotly
