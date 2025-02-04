@@ -6,3 +6,5 @@ plotly
 flask
 gunicorn
 jupyter
+scipy
+seaborn
