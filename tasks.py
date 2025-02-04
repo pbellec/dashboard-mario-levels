@@ -22,7 +22,7 @@ def preprocess_data(c):
 @task
 def cluster_scenes(c):
     """Hierarchical clustering on scenes based on annotations."""
-    c.run(f"python src/cluster_scenes.py outputs/clusters.pkl")
+    c.run(f"python src/cluster_scenes.py outputs/clusters.pkl --n_clusters $(seq 5 30)")
 
 
 # ===============================
@@ -45,9 +45,9 @@ def setup_env(c):
     c.run("pip install -e .")
 
 @task
-def clean_temp(c):
+def clean_outputs(c):
     """Removes temporary files and cached data."""
-    c.run("rm -rf __pycache__ .pytest_cache")
+    c.run("rm -rf outputs/*")
 
 @task
 def full_pipeline(c):
