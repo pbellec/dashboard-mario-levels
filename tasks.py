@@ -24,38 +24,15 @@ def cluster_scenes(c):
     """Hierarchical clustering on scenes based on annotations."""
     c.run(f"python src/cluster_scenes.py outputs/clusters.pkl")
 
-@task
-def evaluate_model(c):
-    """Evaluates the trained model."""
-    c.run(f"python {SCRIPT_DIR}/evaluate_model.py")
 
 # ===============================
 # 🔹 TASKS: Running the Dashboard
 # ===============================
 
-@task(pre=[train_model])
+@task(pre=[cluster_scenes])
 def dashboard(c):
     """Runs the dashboard using the trained model."""
     c.run(f"python {SCRIPT_DIR}/run_dashboard.py")
-
-# ===============================
-# 🔹 TASKS: DataLad Integration
-# ===============================
-
-@task
-def check_status(c):
-    """Checks DataLad dataset status."""
-    c.run("datalad status")
-
-@task
-def push_data(c):
-    """Pushes latest changes to a DataLad repository."""
-    c.run("datalad push --to origin")
-
-@task
-def rerun(c):
-    """Re-runs the full workflow using DataLad."""
-    c.run("datalad rerun")
 
 # ===============================
 # 🔹 TASKS: Utility & Maintenance
@@ -65,6 +42,7 @@ def rerun(c):
 def setup_env(c):
     """Sets up the virtual environment and installs dependencies."""
     c.run("pip install -r requirements.txt")
+    c.run("pip install -e .")
 
 @task
 def clean_temp(c):

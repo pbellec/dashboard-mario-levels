@@ -7,4 +7,6 @@ dashboard_mario_scene.egg-info/dependency_links.txt
 dashboard_mario_scene.egg-info/requires.txt
 dashboard_mario_scene.egg-info/top_level.txt
 src/__init__.py
+src/cluster_scenes.py
+src/dashboard_mario_annotations.py
 src/load_data.py
