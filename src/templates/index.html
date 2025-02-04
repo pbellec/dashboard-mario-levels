@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMAP Image Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            transform-origin: center;
+        }
+        .scene-img {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s linear;
+        }
+        #zoom-feedback {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="zoom-feedback">Zoom: 1.0</div>
+
+    <script>
+        let scale = 1.0;
+        let translateX = 0;
+        let translateY = 0;
+        const container = document.getElementById('container');
+        const zoomFeedback = document.getElementById('zoom-feedback');
+
+        fetch('/get_scenes')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(scene => {
+                    const img = document.createElement('img');
+                    img.src = `/image/${scene.scene_ID}.jpg`;
+                    img.classList.add('scene-img');
+                    img.style.left = `${(scene.DR_1 - -50) / 100 * 100}%`;
+                    img.style.top = `${(scene.DR_2 - -50) / 100 * 100}%`;
+                    img.style.width = `${scale * 5}%`;
+                    img.style.height = `${scale * 5}%`;
+                    container.appendChild(img);
+                });
+            });
+
+        container.addEventListener('wheel', event => {
+            event.preventDefault();
+            let zoomIntensity = 0.1;
+            let delta = event.deltaY > 0 ? -zoomIntensity : zoomIntensity;
+
+            let rect = container.getBoundingClientRect();
+            let mouseX = (event.clientX - rect.left) / rect.width;
+            let mouseY = (event.clientY - rect.top) / rect.height;
+
+            let prevScale = scale;
+            scale = Math.min(Math.max(0.5, scale + delta), 5.0);
+
+            translateX -= (mouseX - 0.5) * rect.width * (scale - prevScale);
+            translateY -= (mouseY - 0.5) * rect.height * (scale - prevScale);
+
+            zoomFeedback.innerText = `Zoom: ${scale.toFixed(2)}`;
+            zoomFeedback.style.display = 'block';
+            setTimeout(() => { zoomFeedback.style.display = 'none'; }, 1000);
+
+            container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+            document.querySelectorAll('.scene-img').forEach(img => {
+                img.style.left = `${(parseFloat(img.style.left) - 50) * scale + 50}%`;
+                img.style.top = `${(parseFloat(img.style.top) - 50) * scale + 50}%`;
+                img.style.width = `${scale * 5}%`;
+                img.style.height = `${scale * 5}%`;
+            });
+        });
+
+        let isDragging = false;
+        let startX, startY;
+
+        container.addEventListener('mousedown', event => {
+            isDragging = true;
+            startX = event.clientX - translateX;
+            startY = event.clientY - translateY;
+        });
+
+        document.addEventListener('mousemove', event => {
+            if (isDragging) {
+                translateX = event.clientX - startX;
+                translateY = event.clientY - startY;
+                container.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+    </script>
+</body>
+</html>
