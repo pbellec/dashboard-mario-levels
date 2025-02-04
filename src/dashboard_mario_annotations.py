@@ -23,37 +23,28 @@ def serve_image(filename):
 # Initialize Dash app
 app = dash.Dash(__name__, server=server)
 
-# set viewport
-x_min, x_max = [scene_data["DR_1"].min(), scene_data["DR_1"].max()]
-y_min, y_max = [scene_data["DR_2"].min(), scene_data["DR_2"].max()]
-zoom_factor_x = (x_max - x_min) / 30  # Image size scales with x-axis range
-zoom_factor_y = (y_max - y_min) / 30  # Image size scales with y-axis range  # Adjust scaling for better visibility  # Adjust scaling factor as needed
+# Define initial viewport
+x_min, x_max = scene_data["DR_1"].min(), scene_data["DR_1"].max()
+y_min, y_max = scene_data["DR_2"].min(), scene_data["DR_2"].max()
 
-# Add images
-images = [
-    dict(
-        source=f"http://127.0.0.1:8050/image/{row['scene_ID']}.jpg",
-        x=row["DR_1"],
-        y=row["DR_2"],
-        xref="x",
-        yref="y",
-        sizey=zoom_factor_y,
-        sizex=zoom_factor_x,  # Adjust scaling
-        xanchor="center",
-        yanchor="middle",
-        layer="above"
-    ) for _, row in scene_data.iterrows()
-]
-
-# Define layout dictionary
-layout_dict = {
-    "xaxis": {"range": [x_min, x_max], "visible": True},
-    "yaxis": {"range": [y_min, y_max], "visible": True, "scaleanchor": "x"},
-    "margin": {"l": 0, "r": 0, "t": 0, "b": 0},
-    "paper_bgcolor": "rgba(0,0,0,0)",
-    "plot_bgcolor": "rgba(0,0,0,0)",
-    "images": images
-}
+# Create a scatter plot with markers
+scatter_plot = go.Figure(
+    data=[go.Scatter(
+        x=scene_data["DR_1"],
+        y=scene_data["DR_2"],
+        mode="markers",
+        marker=dict(size=5, color="blue"),
+        text=scene_data["scene_ID"],
+        hoverinfo="text"
+    )],
+    layout={
+        "xaxis": {"range": [x_min, x_max], "visible": True},
+        "yaxis": {"range": [y_min, y_max], "visible": True, "scaleanchor": "x"},
+        "margin": {"l": 0, "r": 0, "t": 0, "b": 0},
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "plot_bgcolor": "rgba(0,0,0,0)"
+    }
+)
 
 # Define layout
 app.layout = html.Div([
@@ -61,10 +52,41 @@ app.layout = html.Div([
         id="scatter-plot",
         config={"scrollZoom": True},
         style={"width": "100vw", "height": "100vh"},
-        figure=go.Figure(layout=layout_dict),
-    )
+        figure=scatter_plot,
+    ),
+    html.Img(id="hover-image", style={
+        "position": "absolute",
+        "display": "none",
+        "width": "150px",
+        "height": "150px",
+        "border": "1px solid black",
+        "background": "white"
+    })
 ])
 
+# Callback to switch markers to images dynamically
+@app.callback(
+    Output("hover-image", "src"),
+    Output("hover-image", "style"),
+    Input("scatter-plot", "hoverData")
+)
+def update_hover_image(hoverData):
+    if hoverData and "points" in hoverData:
+        point = hoverData["points"][0]
+        scene_id = point["text"]
+        img_src = f"http://127.0.0.1:8050/image/{scene_id}.jpg"
+        img_style = {
+            "position": "absolute",
+            "left": f"{point['x']+5}px",
+            "top": f"{point['y']+5}px",
+            "width": "300px",
+            "height": "300px",
+            "border": "1px solid black",
+            "background": "white",
+            "display": "block"
+        }
+        return img_src, img_style
+    return "", {"display": "none"}
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=8050)
